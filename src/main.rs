@@ -11,11 +11,11 @@ use diesel::{Connection, Insertable, PgConnection, RunQueryDsl};
 use matter::matter;
 use schema::{posts, users};
 use serde::Deserialize;
-use serde_yaml;
-use slug;
-use std::fs::{read_dir, read_to_string};
-use std::io::stdin;
 use std::{env::var, path::PathBuf, process::exit};
+use std::{
+    fs::{read_dir, read_to_string},
+    io::stdin,
+};
 mod cli;
 mod schema;
 
@@ -33,12 +33,13 @@ struct Matter {
 
 impl Matter {
     // helper function to converty date to i64
-    async fn date_to_timestamp(self) -> i64 {
+    async fn date_to_timestamp(&self) -> i64 {
         let datetime = DateTime::parse_from_rfc3339(&self.date).unwrap();
         let datetime_utc = datetime.with_timezone(&Utc);
         datetime_utc.timestamp()
     }
-    pub async fn to_post(self, content: String, author: String) -> Post {
+
+    pub async fn to_post(&self, content: String, author: String) -> Post {
         let mut post_description = String::new();
         println!("Description for {}\n", self.title);
         stdin().read_line(&mut post_description).unwrap();
@@ -48,7 +49,7 @@ impl Matter {
             description: Some(post_description),
             content: Some(content),
             draft: self.draft,
-            author: author,
+            author,
             published: self.date_to_timestamp().await,
         }
     }
@@ -110,7 +111,6 @@ impl NewUser {
     }
 }
 
-
 async fn get_envvar(envvar: &str) -> String {
     match var(envvar) {
         Ok(envvar) => envvar,
@@ -139,7 +139,9 @@ async fn main() {
     let passwd = get_envvar("PASSWD").await;
     let email = get_envvar("EMAIL").await;
 
-    let user = NewUser::new(username.clone(), email, passwd.clone(), passwd).await.unwrap();
+    let user = NewUser::new(username.clone(), email, passwd.clone(), passwd)
+        .await
+        .unwrap();
     let mut conn = establish_connection(database_url);
     diesel::insert_into(users::table)
         .values(user)
