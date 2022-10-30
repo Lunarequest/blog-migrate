@@ -1,0 +1,11 @@
+version: "3.2"
+services:
+  db:
+      image: "docker.io/postgres"
+      environment:
+          - POSTGRES_USER=luna
+          - POSTGRES_PASSWORD=luna
+      ports:
+          - "5432:5432"
+      volumes:
+        - ./pgdata:/var/lib/postgresql/data:z
