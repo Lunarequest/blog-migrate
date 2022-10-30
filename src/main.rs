@@ -145,6 +145,8 @@ async fn main() {
     let mut conn = establish_connection(database_url);
     diesel::insert_into(users::table)
         .values(user)
+        .on_conflict(users::username)
+        .do_nothing()
         .execute(&mut conn)
         .expect("failed to create new user");
     let files = match read_dir(path) {
@@ -170,4 +172,8 @@ async fn main() {
             Err(e) => eprintln!("{}", e),
         }
     }
+    diesel::insert_into(posts::table)
+        .values(posts)
+        .execute(&mut conn)
+        .unwrap();
 }
