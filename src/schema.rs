@@ -1,5 +1,6 @@
 // @generated automatically by Diesel CLI.
-table! {
+
+diesel::table! {
     posts (slug) {
         slug -> Varchar,
         title -> Varchar,
@@ -8,19 +9,25 @@ table! {
         draft -> Bool,
         author -> Varchar,
         published -> Int8,
+        tags -> Array<Nullable<Text>>,
     }
 }
 
-table! {
+diesel::table! {
+    tags (tag) {
+        tag -> Varchar,
+    }
+}
+
+diesel::table! {
     users (id) {
         id -> Int4,
         username -> Varchar,
         email -> Varchar,
         passwd -> Varchar,
         isadmin -> Bool,
-        salt -> Text,
         confirmed -> Bool,
     }
 }
 
-allow_tables_to_appear_in_same_query!(posts, users,);
+diesel::allow_tables_to_appear_in_same_query!(posts, tags, users,);
