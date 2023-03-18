@@ -190,9 +190,19 @@ async fn main() -> Result<(), String> {
     insert_tags.dedup_by_key(|a| a.tag.to_ascii_lowercase());
     match diesel::insert_into(posts::table)
         .values(posts)
+        .on_conflict_do_nothing()
         .execute(&mut conn)
     {
-        Ok(_) => Ok(()),
+        Ok(_) => Ok(
+            match diesel::insert_into(tags::table)
+                .values(insert_tags)
+                .on_conflict_do_nothing()
+                .execute(&mut conn)
+            {
+                Ok(_) => (),
+                Err(e) => return Err(e.to_string()),
+            },
+        ),
         Err(e) => Err(e.to_string()),
     }
 }
